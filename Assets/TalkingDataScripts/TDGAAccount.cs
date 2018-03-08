@@ -18,6 +18,7 @@ public enum AccountType {
 	QQ = 3,
 	QQ_WEIBO = 4,
 	ND91 = 5,
+	WEIXIN = 6,
 	TYPE1 = 11,
 	TYPE2 = 12,
 	TYPE3 = 13,
