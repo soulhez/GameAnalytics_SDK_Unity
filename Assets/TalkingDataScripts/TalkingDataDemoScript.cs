@@ -101,7 +101,7 @@ public class TalkingDataDemoScript : MonoBehaviour {
 		}
 #if UNITY_IPHONE
 		TalkingDataGA.SetDeviceToken();
-		TalkingDataGA.HandleTDGAPushMessage();
+		TalkingDataGA.HandlePushMessage();
 #endif
 	}
 	
