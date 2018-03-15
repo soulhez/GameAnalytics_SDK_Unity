@@ -13,7 +13,7 @@ public class TalkingDataDemoScript : MonoBehaviour {
 	
 	const int left = 90;
 	const int height = 50;
-	const int top = 60;
+	const int top = 120;
 	int width = Screen.width - left * 2;
 	const int step = 60;
 	
@@ -25,6 +25,12 @@ public class TalkingDataDemoScript : MonoBehaviour {
 		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Create User")) {
 			account = TDGAAccount.SetAccount("User" + index);
 			index++;
+		}
+		
+		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Set Account Type")) {
+			if (account != null) {
+				account.SetAccountType (AccountType.WEIXIN);
+			}
 		}
 		
 		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Account Level +1")) {
