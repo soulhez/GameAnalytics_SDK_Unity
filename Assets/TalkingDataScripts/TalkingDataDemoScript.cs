@@ -85,7 +85,7 @@ public class TalkingDataDemoScript : MonoBehaviour {
 	void Start () {
 		Debug.Log("start...!!!!!!!!!!");
 #if UNITY_IPHONE
-#if UNITY_5
+#if UNITY_5 || UNITY_5_6_OR_NEWER
 		UnityEngine.iOS.NotificationServices.RegisterForNotifications(
 			UnityEngine.iOS.NotificationType.Alert |
 			UnityEngine.iOS.NotificationType.Badge |

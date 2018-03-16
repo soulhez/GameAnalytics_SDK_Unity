@@ -192,7 +192,7 @@ public class TalkingDataGA {
 	}
 
 #if UNITY_IPHONE
-#if UNITY_5
+#if UNITY_5 || UNITY_5_6_OR_NEWER
 	public static void SetDeviceToken() {
 		if (!hasTokenBeenObtained) {
 			byte[] byteToken = UnityEngine.iOS.NotificationServices.deviceToken;
