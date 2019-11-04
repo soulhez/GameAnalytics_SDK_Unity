@@ -25,7 +25,7 @@ public class TalkingDataGA {
 	private static extern void tdgaSetVerboseLogDisabled();
 	
 	[DllImport ("__Internal")]
-	private static extern void tdgaSetDeviceToken(string deviceToken);
+	private static extern void tdgaSetDeviceToken(byte[] deviceToke, int length);
 	
 	[DllImport ("__Internal")]
 	private static extern void tdgaHandlePushMessage(string message);
@@ -195,10 +195,9 @@ public class TalkingDataGA {
 #if UNITY_5 || UNITY_5_6_OR_NEWER
 	public static void SetDeviceToken() {
 		if (!hasTokenBeenObtained) {
-			byte[] byteToken = UnityEngine.iOS.NotificationServices.deviceToken;
-			if(byteToken != null) {
-				string deviceToken = System.BitConverter.ToString(byteToken).Replace("-","");
-				tdgaSetDeviceToken(deviceToken);
+			byte[] deviceToken = UnityEngine.iOS.NotificationServices.deviceToken;
+			if(deviceToken != null) {
+				tdgaSetDeviceToken(deviceToken, deviceToken.Length);
 				hasTokenBeenObtained = true;
 			}
 		}
@@ -221,10 +220,9 @@ public class TalkingDataGA {
 #else
 	public static void SetDeviceToken() {
 		if (!hasTokenBeenObtained) {
-			byte[] byteToken = NotificationServices.deviceToken;
-			if(byteToken != null) {
-				string deviceToken = System.BitConverter.ToString(byteToken).Replace("-","");
-				tdgaSetDeviceToken(deviceToken);
+			byte[] deviceToken = NotificationServices.deviceToken;
+			if(deviceToken != null) {
+				tdgaSetDeviceToken(deviceToken, deviceToken.Length);
 				hasTokenBeenObtained = true;
 			}
 		}

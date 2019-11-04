@@ -55,9 +55,9 @@ extern "C" {
         return tdgaDeviceId;
     }
     
-    void tdgaSetDeviceToken(const char *deviceToken) {
-        NSString *token = tdgaCreateNSString(deviceToken);
-        [TalkingDataGA setDeviceToken:(NSData *)token];
+    void tdgaSetDeviceToken(const void *deviceToken, int length) {
+        NSData *tokenData = [NSData dataWithBytes:deviceToken length:length];
+        [TalkingDataGA setDeviceToken:tokenData];
     }
     
     void tdgaHandlePushMessage(const char *message) {
