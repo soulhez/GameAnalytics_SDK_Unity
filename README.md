@@ -90,4 +90,5 @@ Game Analytics Unity 平台 SDK 由`封装层`和 `Native SDK` 两部分构成�
 	+ (void)setDeviceToken:(NSData *)deviceToken;
 	+ (BOOL)handleTDGAPushMessage:(NSDictionary *)message;
 	```
+3. 如果遇到com.unity3d.player.UnityPlayerNativeActivity类找不到的情况，将其改为com.unity3d.player.UnityPlayerActivity即可，这是由于不同Unity版本导致类名不一样。
 	
