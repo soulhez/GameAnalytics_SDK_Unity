@@ -1,130 +1,178 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System;
-using System.Threading;
 
-public class TalkingDataDemoScript : MonoBehaviour {
-	
-	int index = 1;
-	int level = 1;
-	string gameserver = "";
-	TDGAAccount account;
-	
-	const int left = 90;
-	const int height = 50;
-	const int top = 120;
-	int width = Screen.width - left * 2;
-	const int step = 60;
-	
-	void OnGUI() {
-		
-		int i = 0;
-		GUI.Box(new Rect(10, 10, Screen.width - 20, Screen.height - 20), "Demo Menu");
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Create User")) {
-			account = TDGAAccount.SetAccount("User" + index);
-			index++;
+public class TalkingDataDemoScript : MonoBehaviour
+{
+    private const int top = 100;
+    private const int left = 80;
+    private const int height = 50;
+    private readonly int width = Screen.width - (left * 2);
+    private const int step = 60;
+    private TDGAAccount account;
+    private int index = 1;
+    private int level = 1;
+
+    private void OnGUI()
+    {
+        int i = 0;
+        GUI.Box(new Rect(10, 10, Screen.width - 20, Screen.height - 20), "Demo Menu");
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Create Account"))
+        {
+            account = TDGAAccount.SetAccount("User" + index++);
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Set Account Name"))
+        {
+            if (account != null)
+            {
+                account.SetAccountName("name");
+            }
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Set Account Type"))
+        {
+            if (account != null)
+            {
+                account.SetAccountType(AccountType.WEIXIN);
+            }
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Set Level"))
+        {
+            if (account != null)
+            {
+                account.SetLevel(level++);
+            }
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Set Gender"))
+        {
+            if (account != null)
+            {
+                account.SetGender(Gender.MALE);
+            }
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Set Age"))
+        {
+            if (account != null)
+            {
+                account.SetAge(21);
+            }
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Set Game Server"))
+        {
+            if (account != null)
+            {
+                account.SetGameServer("server1");
+            }
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Mission Begin"))
+        {
+            TDGAMission.OnBegin("miss001");
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Mission Completed"))
+        {
+            TDGAMission.OnCompleted("miss001");
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Mission Failed"))
+        {
+            TDGAMission.OnFailed("miss001", "failed");
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Charge Request"))
+        {
+            TDGAVirtualCurrency.OnChargeRequest("order01", "iap", 10, "CNY", 10, "UnionPay");
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Charge Success"))
+        {
+            TDGAVirtualCurrency.OnChargeSuccess("order01");
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Reward"))
+        {
+            TDGAVirtualCurrency.OnReward(100, "reason");
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Item Purchase"))
+        {
+            TDGAItem.OnPurchase("itemid001", 10, 10);
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Item Use"))
+        {
+            TDGAItem.OnUse("itemid001", 1);
+        }
+
+#if TDGA_CUSTOM
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Custome Event"))
+        {
+            Dictionary<string, object> dic = new Dictionary<string, object>
+            {
+                { "StringValue", "Pi" },
+                { "NumberValue", 3.14 }
+            };
+            TalkingDataGA.OnEvent("action_id", dic);
+        }
+#endif
+
+		if (GUI.Button (new Rect (left, top + (step * i++), width, height), "SetLocation"))
+		{
+			TalkingDataGA.SetLocation(39.94, 116.43);
 		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Set Account Type")) {
-			if (account != null) {
-				account.SetAccountType (AccountType.WEIXIN);
-			}
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Account Level +1")) {
-			if (account != null) {
-				account.SetLevel(level++);
-			}
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Chagen Game Server + 'a'")) {
-			if (account != null) {
-				gameserver += "a";
-				account.SetGameServer(gameserver);
-			}
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Charge Request 10")) {
-			TDGAVirtualCurrency.OnChargeRequest("order01", "iap", 10, "CH", 10, "PT");
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Charge Success 10")) {
-			TDGAVirtualCurrency.OnChargeSuccess("order01");
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Reward 100")) {
-			TDGAVirtualCurrency.OnReward(100, "reason");
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Mission Begin")) {
-			TDGAMission.OnBegin("miss001");
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Mission Completed")) {
-			TDGAMission.OnCompleted("miss001");
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Item Purchase 10")) {
-			TDGAItem.OnPurchase("itemid001", 10, 10);
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Item Use 1")) {
-			TDGAItem.OnUse("itemid001", 1);
-		}
-		
-		if (GUI.Button(new Rect(left, top + step * i++, width, height), "Custome Event")) {
-			Dictionary<string, object> dic = new Dictionary<string, object>();
-			dic.Add("StartApp"+"StartAppTime", "startAppMac"+"#"+"02/01/2013 09:52:24");
-			dic.Add("IntValue", 1);
-			TalkingDataGA.OnEvent("action_id", dic);
-		}
-	}
-	
-	void Start () {
-		Debug.Log("start...!!!!!!!!!!");
+    }
+
+    private void Start()
+    {
+        Debug.Log("start...!!!!!!!!!!");
+#if TDGA_PUSH
 #if UNITY_IPHONE
-#if UNITY_5 || UNITY_5_6_OR_NEWER
-		UnityEngine.iOS.NotificationServices.RegisterForNotifications(
-			UnityEngine.iOS.NotificationType.Alert |
-			UnityEngine.iOS.NotificationType.Badge |
-			UnityEngine.iOS.NotificationType.Sound);
-#else
-		NotificationServices.RegisterForRemoteNotificationTypes(
-			RemoteNotificationType.Alert |
-			RemoteNotificationType.Badge |
-			RemoteNotificationType.Sound);
+        UnityEngine.iOS.NotificationServices.RegisterForNotifications(
+            UnityEngine.iOS.NotificationType.Alert |
+            UnityEngine.iOS.NotificationType.Badge |
+            UnityEngine.iOS.NotificationType.Sound);
 #endif
 #endif
-		TalkingDataGA.OnStart("0A33A9FA393A4EC898A788FC293DDD94", "your_channel_id");
-		account = TDGAAccount.SetAccount("User01");
-	}
-	
-	void Update () {
-		if (Input.GetKey(KeyCode.Escape)) {
-			Application.Quit();
-		}
-#if UNITY_IPHONE
-		TalkingDataGA.SetDeviceToken();
-		TalkingDataGA.HandlePushMessage();
+        TalkingDataGA.OnStart("your_app_id", "your_channel_id");
+        account = TDGAAccount.SetAccount("User" + index++);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+#if TDGA_PUSH
+        TalkingDataGA.SetDeviceToken();
+        TalkingDataGA.HandlePushMessage();
 #endif
-	}
-	
-	void OnDestroy (){
-		TalkingDataGA.OnEnd();
-		Debug.Log("onDestroy");
-	}
-	
-	void Awake () {
-		Debug.Log("Awake");
-	}
-	
-	void OnEnable () {
-		Debug.Log("OnEnable");
-	}
-	
-	void OnDisable () {
-		Debug.Log("OnDisable");
-	}
+    }
+
+    private void OnDestroy()
+    {
+        TalkingDataGA.OnEnd();
+        Debug.Log("onDestroy");
+    }
+
+    private void Awake()
+    {
+        Debug.Log("Awake");
+    }
+
+    private void OnEnable()
+    {
+        Debug.Log("OnEnable");
+    }
+
+    private void OnDisable()
+    {
+        Debug.Log("OnDisable");
+    }
 }
