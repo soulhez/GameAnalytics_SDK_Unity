@@ -3,12 +3,6 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 #endif
 
-public enum Gender
-{
-    UNKNOW = 0,
-    MALE = 1,
-    FEMALE = 2
-}
 
 public enum AccountType
 {
@@ -31,34 +25,45 @@ public enum AccountType
     TYPE10 = 20
 }
 
+public enum Gender
+{
+    UNKNOW = 0,
+    MALE = 1,
+    FEMALE = 2
+}
+
+
 public class TDGAAccount
 {
     private static TDGAAccount account;
+
 #if UNITY_ANDROID
-    private static AndroidJavaClass agent;
+    private static string ACCOUNT_CLASS = "com.tendcloud.tenddata.TDGAAccount";
+    private static AndroidJavaClass accountClass;
     private AndroidJavaObject mAccount;
 #endif
+
 #if UNITY_IPHONE
     [DllImport("__Internal")]
-    private static extern void tdgaSetAccount(string accountId);
+    private static extern void TDGASetAccount(string accountId);
 
     [DllImport("__Internal")]
-    private static extern void tdgaSetAccountName(string accountName);
+    private static extern void TDGASetAccountName(string accountName);
 
     [DllImport("__Internal")]
-    private static extern void tdgaSetAccountType(int accountType);
+    private static extern void TDGASetAccountType(int accountType);
 
     [DllImport("__Internal")]
-    private static extern void tdgaSetLevel(int level);
+    private static extern void TDGASetLevel(int level);
 
     [DllImport("__Internal")]
-    private static extern void tdgaSetGender(int gender);
+    private static extern void TDGASetGender(int gender);
 
     [DllImport("__Internal")]
-    private static extern void tdgaSetAge(int age);
+    private static extern void TDGASetAge(int age);
 
     [DllImport("__Internal")]
-    private static extern void tdgaSetGameServer(string gameServer);
+    private static extern void TDGASetGameServer(string gameServer);
 #endif
 
     public static TDGAAccount SetAccount(string accountId)
@@ -70,17 +75,16 @@ public class TDGAAccount
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
 #if UNITY_ANDROID
-            if (agent == null)
+            if (accountClass == null)
             {
-                agent = new AndroidJavaClass("com.tendcloud.tenddata.TDGAAccount");
+                accountClass = new AndroidJavaClass(ACCOUNT_CLASS);
             }
-            account.mAccount = agent.CallStatic<AndroidJavaObject>("setAccount", accountId);
+            account.mAccount = accountClass.CallStatic<AndroidJavaObject>("setAccount", accountId);
 #endif
 #if UNITY_IPHONE
-            tdgaSetAccount(accountId);
+            TDGASetAccount(accountId);
 #endif
         }
-
         return account;
     }
 
@@ -95,7 +99,7 @@ public class TDGAAccount
             }
 #endif
 #if UNITY_IPHONE
-            tdgaSetAccountName(accountName);
+            TDGASetAccountName(accountName);
 #endif
         }
     }
@@ -114,7 +118,7 @@ public class TDGAAccount
             }
 #endif
 #if UNITY_IPHONE
-            tdgaSetAccountType((int)type);
+            TDGASetAccountType((int)type);
 #endif
         }
     }
@@ -130,7 +134,7 @@ public class TDGAAccount
             }
 #endif
 #if UNITY_IPHONE
-            tdgaSetLevel(level);
+            TDGASetLevel(level);
 #endif
         }
     }
@@ -146,7 +150,7 @@ public class TDGAAccount
             }
 #endif
 #if UNITY_IPHONE
-            tdgaSetAge(age);
+            TDGASetAge(age);
 #endif
         }
     }
@@ -165,7 +169,7 @@ public class TDGAAccount
             }
 #endif
 #if UNITY_IPHONE
-            tdgaSetGender((int)type);
+            TDGASetGender((int)type);
 #endif
         }
     }
@@ -181,7 +185,7 @@ public class TDGAAccount
             }
 #endif
 #if UNITY_IPHONE
-            tdgaSetGameServer(gameServer);
+            TDGASetGameServer(gameServer);
 #endif
         }
     }

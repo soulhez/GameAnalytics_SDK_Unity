@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class TalkingDataDemoScript : MonoBehaviour
+public class TDGADemoScript : MonoBehaviour
 {
     private const int top = 100;
     private const int left = 80;
     private const int height = 50;
     private readonly int width = Screen.width - (left * 2);
     private const int step = 60;
+    private string deviceId;
     private TDGAAccount account;
     private int index = 1;
     private int level = 1;
@@ -16,6 +17,17 @@ public class TalkingDataDemoScript : MonoBehaviour
     {
         int i = 0;
         GUI.Box(new Rect(10, 10, Screen.width - 20, Screen.height - 20), "Demo Menu");
+
+        GUI.Label(new Rect(left, top + (step * i++), width, height), deviceId);
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "getDeviceId"))
+        {
+            deviceId = TalkingDataGA.GetDeviceId();
+        }
+
+        if (GUI.Button(new Rect(left, top + (step * i++), width, height), "SetLocation"))
+        {
+            TalkingDataGA.SetLocation(39.94, 116.43);
+        }
 
         if (GUI.Button(new Rect(left, top + (step * i++), width, height), "Create Account"))
         {
@@ -121,16 +133,15 @@ public class TalkingDataDemoScript : MonoBehaviour
             TalkingDataGA.OnEvent("action_id", dic);
         }
 #endif
-
-		if (GUI.Button (new Rect (left, top + (step * i++), width, height), "SetLocation"))
-		{
-			TalkingDataGA.SetLocation(39.94, 116.43);
-		}
     }
 
     private void Start()
     {
-        Debug.Log("start...!!!!!!!!!!");
+        Debug.Log("Start");
+        //TalkingDataGA.SetVerboseLogDisabled();
+        TalkingDataGA.BackgroundSessionEnabled();
+        TalkingDataGA.OnStart("your_app_id", "your_channel_id");
+        account = TDGAAccount.SetAccount("User" + index++);
 #if TDGA_PUSH
 #if UNITY_IPHONE
         UnityEngine.iOS.NotificationServices.RegisterForNotifications(
@@ -139,8 +150,6 @@ public class TalkingDataDemoScript : MonoBehaviour
             UnityEngine.iOS.NotificationType.Sound);
 #endif
 #endif
-        TalkingDataGA.OnStart("your_app_id", "your_channel_id");
-        account = TDGAAccount.SetAccount("User" + index++);
     }
 
     private void Update()
@@ -157,8 +166,8 @@ public class TalkingDataDemoScript : MonoBehaviour
 
     private void OnDestroy()
     {
-        TalkingDataGA.OnEnd();
         Debug.Log("onDestroy");
+        TalkingDataGA.OnEnd();
     }
 
     private void Awake()

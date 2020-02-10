@@ -8,49 +8,56 @@ using System.Runtime.InteropServices;
 using System.Collections;
 #endif
 
+
 public static class TalkingDataGA
 {
 #if UNITY_ANDROID
-    private static AndroidJavaClass agent;
-    private static AndroidJavaClass unityClass;
+    private static string GAME_ANALYTICS_CLASS = "com.tendcloud.tenddata.TalkingDataGA";
+    private static AndroidJavaClass gameAnalyticsClass;
+    private static AndroidJavaClass unityPlayerClass;
 #endif
+
 #if UNITY_IPHONE
     [DllImport("__Internal")]
-    private static extern string tdgaGetDeviceId();
+    private static extern string TDGAGetDeviceId();
 
     [DllImport("__Internal")]
-    private static extern void tdgaSetVerboseLogDisabled();
+    private static extern void TDGASetVerboseLogDisabled();
 
     [DllImport("__Internal")]
-    private static extern void tdgaOnStart(string appId, string channelId);
+    private static extern void TDGABackgroundSessionEnabled();
+
+    [DllImport("__Internal")]
+    private static extern void TDGAOnStart(string appId, string channelId);
+
+    [DllImport("__Internal")]
+    private static extern void TDGASetLocation(double latitude, double longitude);
 
 #if TDGA_CUSTOM
     [DllImport("__Internal")]
-    private static extern void tdgaOnEvent(string eventId, string parameters);
+    private static extern void TDGAOnEvent(string eventId, string parameters);
 #endif
-
-	[DllImport("__Internal")]
-	private static extern void tdgaSetLocation(double latitude, double longitude);
 
 #if TDGA_PUSH
     [DllImport("__Internal")]
-    private static extern void tdgaSetDeviceToken(byte[] deviceToke, int length);
+    private static extern void TDGASetDeviceToken(byte[] deviceToke, int length);
 
     [DllImport("__Internal")]
-    private static extern void tdgaHandlePushMessage(string message);
+    private static extern void TDGAHandlePushMessage(string message);
 
     private static bool hasTokenBeenObtained;
 #endif
 #endif
 
 #if UNITY_ANDROID
-    private static AndroidJavaClass GetAgent()
+    private static AndroidJavaObject GetCurrentActivity()
     {
-        if (agent == null)
+        if (unityPlayerClass == null)
         {
-            agent = new AndroidJavaClass("com.tendcloud.tenddata.TalkingDataGA");
+            unityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
         }
-        return agent;
+        AndroidJavaObject activity = unityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
+        return activity;
     }
 #endif
 
@@ -60,11 +67,14 @@ public static class TalkingDataGA
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
 #if UNITY_ANDROID
-            AndroidJavaObject activity = unityClass.GetStatic<AndroidJavaObject>("currentActivity");
-            deviceId = GetAgent().CallStatic<string>("getDeviceId", activity);
+            if (gameAnalyticsClass == null)
+            {
+                gameAnalyticsClass = new AndroidJavaClass(GAME_ANALYTICS_CLASS);
+            }
+            deviceId = gameAnalyticsClass.CallStatic<string>("getDeviceId", GetCurrentActivity());
 #endif
 #if UNITY_IPHONE
-            deviceId = tdgaGetDeviceId();
+            deviceId = TDGAGetDeviceId();
 #endif
         }
         return deviceId;
@@ -75,10 +85,24 @@ public static class TalkingDataGA
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
 #if UNITY_ANDROID
-            GetAgent().CallStatic("setVerboseLogDisabled");
+            if (gameAnalyticsClass == null)
+            {
+                gameAnalyticsClass = new AndroidJavaClass(GAME_ANALYTICS_CLASS);
+            }
+            gameAnalyticsClass.CallStatic("setVerboseLogDisabled");
 #endif
 #if UNITY_IPHONE
-            tdgaSetVerboseLogDisabled();
+            TDGASetVerboseLogDisabled();
+#endif
+        }
+    }
+
+    public static void BackgroundSessionEnabled()
+    {
+        if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
+        {
+#if UNITY_IPHONE
+            TDGABackgroundSessionEnabled();
 #endif
         }
     }
@@ -87,103 +111,36 @@ public static class TalkingDataGA
     {
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
+            Debug.Log("TalkingData Game Analytics Unity SDK.");
 #if UNITY_ANDROID
             using (AndroidJavaClass dz = new AndroidJavaClass("com.tendcloud.tenddata.game.dz"))
             {
                 dz.SetStatic("a", 2);
             }
-            unityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            AndroidJavaObject activity = unityClass.GetStatic<AndroidJavaObject>("currentActivity");
-            GetAgent().CallStatic("init", activity, appId, channelId);
-            GetAgent().CallStatic("onResume", activity);
+            if (gameAnalyticsClass == null)
+            {
+                gameAnalyticsClass = new AndroidJavaClass(GAME_ANALYTICS_CLASS);
+            }
+            AndroidJavaObject activity = GetCurrentActivity();
+            gameAnalyticsClass.CallStatic("init", activity, appId, channelId);
+            gameAnalyticsClass.CallStatic("onResume", activity);
 #endif
 #if UNITY_IPHONE
-            tdgaOnStart(appId, channelId);
+            TDGAOnStart(appId, channelId);
 #endif
         }
     }
-
-#if TDGA_CUSTOM
-    public static void OnEvent(string actionId, Dictionary<string, object> parameters)
-    {
-        if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
-        {
-#if UNITY_ANDROID
-            if (parameters != null && parameters.Count > 0)
-            {
-                int count = parameters.Count;
-                AndroidJavaObject map = new AndroidJavaObject("java.util.HashMap", count);
-                IntPtr method_Put = AndroidJNIHelper.GetMethodID(map.GetRawClass(), "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-                object[] args = new object[2];
-                foreach (KeyValuePair<string, object> kvp in parameters)
-                {
-                    args[0] = new AndroidJavaObject("java.lang.String", kvp.Key);
-                    args[1] = typeof(string).IsInstanceOfType(kvp.Value)
-                        ? new AndroidJavaObject("java.lang.String", kvp.Value)
-                        : new AndroidJavaObject("java.lang.Double", "" + kvp.Value);
-                    AndroidJNI.CallObjectMethod(map.GetRawObject(), method_Put, AndroidJNIHelper.CreateJNIArgArray(args));
-                }
-
-                if (agent != null)
-                {
-                    agent.CallStatic("onEvent", actionId, map);
-                }
-                map.Dispose();
-            }
-            else
-            {
-                if (agent != null)
-                {
-                    agent.CallStatic("onEvent", actionId, null);
-                }
-            }
-#endif
-#if UNITY_IPHONE
-			if (parameters != null && parameters.Count > 0)
-			{
-				string parameterStr = "{";
-				foreach (KeyValuePair<string, object> kvp in parameters)
-				{
-					if (kvp.Value is string)
-					{
-						parameterStr += "\"" + kvp.Key + "\":\"" + kvp.Value + "\",";
-					}
-					else
-					{
-						try
-						{
-							double tmp = System.Convert.ToDouble(kvp.Value);
-							parameterStr += "\"" + kvp.Key + "\":" + tmp + ",";
-						}
-						catch (System.Exception)
-						{
-						}
-					}
-				}
-				parameterStr = parameterStr.TrimEnd(',');
-				parameterStr += "}";
-				tdgaOnEvent(actionId, parameterStr);
-			}
-			else
-			{
-				tdgaOnEvent(actionId, null);
-			}
-#endif
-        }
-    }
-#endif
 
     public static void OnEnd()
     {
 #if UNITY_ANDROID
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
-            if (agent != null)
+            if (gameAnalyticsClass != null)
             {
-                AndroidJavaObject activity = unityClass.GetStatic<AndroidJavaObject>("currentActivity");
-                agent.CallStatic("onPause", activity);
-                agent = null;
-                unityClass = null;
+                gameAnalyticsClass.CallStatic("onPause", GetCurrentActivity());
+                gameAnalyticsClass = null;
+                unityPlayerClass = null;
             }
         }
 #endif
@@ -194,26 +151,91 @@ public static class TalkingDataGA
 #if UNITY_ANDROID
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
-            if (agent != null)
+            if (gameAnalyticsClass != null)
             {
-                AndroidJavaObject activity = unityClass.GetStatic<AndroidJavaObject>("currentActivity");
-                agent.CallStatic("onKill", activity);
-                agent = null;
-                unityClass = null;
+                gameAnalyticsClass.CallStatic("onKill", GetCurrentActivity());
+                gameAnalyticsClass = null;
+                unityPlayerClass = null;
             }
         }
 #endif
     }
 
-	public static void SetLocation(double latitude, double longitude)
-	{
+    public static void SetLocation(double latitude, double longitude)
+    {
 #if UNITY_IPHONE
-		if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
-		{
-			tdgaSetLocation(latitude, longitude);
-		}
+        if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
+        {
+            TDGASetLocation(latitude, longitude);
+        }
 #endif
-	}
+    }
+
+#if TDGA_CUSTOM
+    public static void OnEvent(string actionId, Dictionary<string, object> parameters)
+    {
+        if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
+        {
+#if UNITY_ANDROID
+            if (gameAnalyticsClass != null)
+            {
+                if (parameters != null && parameters.Count > 0)
+                {
+                    int count = parameters.Count;
+                    AndroidJavaObject map = new AndroidJavaObject("java.util.HashMap", count);
+                    IntPtr method_Put = AndroidJNIHelper.GetMethodID(map.GetRawClass(), "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+                    object[] args = new object[2];
+                    foreach (KeyValuePair<string, object> kvp in parameters)
+                    {
+                        args[0] = new AndroidJavaObject("java.lang.String", kvp.Key);
+                        args[1] = typeof(string).IsInstanceOfType(kvp.Value)
+                            ? new AndroidJavaObject("java.lang.String", kvp.Value)
+                            : new AndroidJavaObject("java.lang.Double", "" + kvp.Value);
+                        AndroidJNI.CallObjectMethod(map.GetRawObject(), method_Put, AndroidJNIHelper.CreateJNIArgArray(args));
+                    }
+                    gameAnalyticsClass.CallStatic("onEvent", actionId, map);
+                    map.Dispose();
+                }
+                else
+                {
+                    gameAnalyticsClass.CallStatic("onEvent", actionId, null);
+                }
+            }
+#endif
+#if UNITY_IPHONE
+            if (parameters != null && parameters.Count > 0)
+            {
+                string parameterStr = "{";
+                foreach (KeyValuePair<string, object> kvp in parameters)
+                {
+                    if (kvp.Value is string)
+                    {
+                        parameterStr += "\"" + kvp.Key + "\":\"" + kvp.Value + "\",";
+                    }
+                    else
+                    {
+                        try
+                        {
+                            double tmp = System.Convert.ToDouble(kvp.Value);
+                            parameterStr += "\"" + kvp.Key + "\":" + tmp + ",";
+                        }
+                        catch (System.Exception)
+                        {
+                        }
+                    }
+                }
+                parameterStr = parameterStr.TrimEnd(',');
+                parameterStr += "}";
+                TDGAOnEvent(actionId, parameterStr);
+            }
+            else
+            {
+                TDGAOnEvent(actionId, null);
+            }
+#endif
+        }
+    }
+#endif
 
 #if TDGA_PUSH
     public static void SetDeviceToken()
@@ -226,7 +248,7 @@ public static class TalkingDataGA
                 byte[] deviceToken = UnityEngine.iOS.NotificationServices.deviceToken;
                 if (deviceToken != null)
                 {
-                    tdgaSetDeviceToken(deviceToken, deviceToken.Length);
+                    TDGASetDeviceToken(deviceToken, deviceToken.Length);
                     hasTokenBeenObtained = true;
                 }
             }
@@ -250,7 +272,7 @@ public static class TalkingDataGA
                         if (de.Key.ToString().Equals("sign"))
                         {
                             string sign = de.Value.ToString();
-                            tdgaHandlePushMessage(sign);
+                            TDGAHandlePushMessage(sign);
                         }
                     }
                 }

@@ -12,17 +12,17 @@
 //#define TDGA_PUSH       // 推送营销
 
 // Converts C style string to NSString
-static NSString *tdgaCreateNSString(const char *string) {
+static NSString *TDGACreateNSString(const char *string) {
     return string ? [NSString stringWithUTF8String:string] : nil;
 }
 
-static TDGAAccount *tdgaAccount = nil;
 static char *tdgaDeviceId = NULL;
+static TDGAAccount *tdgaAccount = nil;
 
 extern "C" {
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 
-const char *tdgaGetDeviceId() {
+const char *TDGAGetDeviceId() {
     if (!tdgaDeviceId) {
         NSString *deviceId = [TalkingDataGA getDeviceId];
         tdgaDeviceId = (char *)calloc(deviceId.length + 1, sizeof(char));
@@ -32,115 +32,119 @@ const char *tdgaGetDeviceId() {
     return tdgaDeviceId;
 }
 
-void tdgaSetVerboseLogDisabled() {
+void TDGASetVerboseLogDisabled() {
     [TalkingDataGA setVerboseLogDisabled];
 }
 
-void tdgaOnStart(const char *appId, const char *channelId) {
+void TDGABackgroundSessionEnabled() {
+    [TalkingDataGA backgroundSessionEnabled];
+}
+
+void TDGAOnStart(const char *appId, const char *channelId) {
     if ([TalkingDataGA respondsToSelector:@selector(setFrameworkTag:)]) {
         [TalkingDataGA performSelector:@selector(setFrameworkTag:) withObject:@2];
     }
-    [TalkingDataGA onStart:tdgaCreateNSString(appId) withChannelId:tdgaCreateNSString(channelId)];
+    [TalkingDataGA onStart:TDGACreateNSString(appId) withChannelId:TDGACreateNSString(channelId)];
 }
 
-void tdgaSetAccount(const char *accountId) {
-    tdgaAccount = [TDGAAccount setAccount:tdgaCreateNSString(accountId)];
+void TDGASetLocation(double latitude, double longitude) {
+    [TalkingDataGA setLatitude:latitude longitude:longitude];
 }
 
-void tdgaSetAccountName(const char *accountName) {
+void TDGASetAccount(const char *accountId) {
+    tdgaAccount = [TDGAAccount setAccount:TDGACreateNSString(accountId)];
+}
+
+void TDGASetAccountName(const char *accountName) {
     if (nil != tdgaAccount) {
-        [tdgaAccount setAccountName:tdgaCreateNSString(accountName)];
+        [tdgaAccount setAccountName:TDGACreateNSString(accountName)];
     }
 }
 
-void tdgaSetAccountType(int accountType) {
+void TDGASetAccountType(int accountType) {
     if (nil != tdgaAccount) {
         [tdgaAccount setAccountType:(TDGAAccountType)accountType];
     }
 }
 
-void tdgaSetLevel(int level) {
+void TDGASetLevel(int level) {
     if (nil != tdgaAccount) {
         [tdgaAccount setLevel:level];
     }
 }
 
-void tdgaSetGender(int gender) {
+void TDGASetGender(int gender) {
     if (nil != tdgaAccount) {
         [tdgaAccount setGender:(TDGAGender)gender];
     }
 }
 
-void tdgaSetAge(int age) {
+void TDGASetAge(int age) {
     if (nil != tdgaAccount) {
         [tdgaAccount setAge:age];
     }
 }
 
-void tdgaSetGameServer(const char *gameServer) {
+void TDGASetGameServer(const char *gameServer) {
     if (nil != tdgaAccount) {
-        [tdgaAccount setGameServer:tdgaCreateNSString(gameServer)];
+        [tdgaAccount setGameServer:TDGACreateNSString(gameServer)];
     }
 }
 
-void tdgaOnBegin(const char *missionId) {
-    [TDGAMission onBegin:tdgaCreateNSString(missionId)];
+void TDGAOnBegin(const char *missionId) {
+    [TDGAMission onBegin:TDGACreateNSString(missionId)];
 }
 
-void tdgaOnCompleted(const char *missionId) {
-    [TDGAMission onCompleted:tdgaCreateNSString(missionId)];
+void TDGAOnCompleted(const char *missionId) {
+    [TDGAMission onCompleted:TDGACreateNSString(missionId)];
 }
 
-void tdgaOnFailed(const char *missionId, const char *failedCause) {
-    [TDGAMission onFailed:tdgaCreateNSString(missionId) failedCause:tdgaCreateNSString(failedCause)];
+void TDGAOnFailed(const char *missionId, const char *failedCause) {
+    [TDGAMission onFailed:TDGACreateNSString(missionId) failedCause:TDGACreateNSString(failedCause)];
 }
 
-void tdgaOnChargeRequst(const char *orderId, const char *iapId, double currencyAmount, const char *currencyType, double virtualCurrencyAmount, const char *paymentType) {
-    [TDGAVirtualCurrency onChargeRequst:tdgaCreateNSString(orderId)
-                                  iapId:tdgaCreateNSString(iapId)
+void TDGAOnChargeRequst(const char *orderId, const char *iapId, double currencyAmount, const char *currencyType, double virtualCurrencyAmount, const char *paymentType) {
+    [TDGAVirtualCurrency onChargeRequst:TDGACreateNSString(orderId)
+                                  iapId:TDGACreateNSString(iapId)
                          currencyAmount:currencyAmount
-                           currencyType:tdgaCreateNSString(currencyType)
+                           currencyType:TDGACreateNSString(currencyType)
                   virtualCurrencyAmount:virtualCurrencyAmount
-                            paymentType:tdgaCreateNSString(paymentType)];
+                            paymentType:TDGACreateNSString(paymentType)];
 }
 
-void tdgaOnChargSuccess(const char *orderId) {
-    [TDGAVirtualCurrency onChargeSuccess:tdgaCreateNSString(orderId)];
+void TDGAOnChargSuccess(const char *orderId) {
+    [TDGAVirtualCurrency onChargeSuccess:TDGACreateNSString(orderId)];
 }
 
-void tdgaOnReward(double virtualCurrencyAmount, const char *reason) {
-    [TDGAVirtualCurrency onReward:virtualCurrencyAmount reason:tdgaCreateNSString(reason)];
+void TDGAOnReward(double virtualCurrencyAmount, const char *reason) {
+    [TDGAVirtualCurrency onReward:virtualCurrencyAmount reason:TDGACreateNSString(reason)];
 }
 
-void tdgaOnPurchase(const char *item, int itemNumber, double priceInVirtualCurrency) {
-    [TDGAItem onPurchase:tdgaCreateNSString(item) itemNumber:itemNumber priceInVirtualCurrency:priceInVirtualCurrency];
+void TDGAOnPurchase(const char *item, int itemNumber, double priceInVirtualCurrency) {
+    [TDGAItem onPurchase:TDGACreateNSString(item) itemNumber:itemNumber priceInVirtualCurrency:priceInVirtualCurrency];
 }
 
-void tdgaOnUse(const char *item, int itemNumber) {
-    [TDGAItem onUse:tdgaCreateNSString(item) itemNumber:itemNumber];
+void TDGAOnUse(const char *item, int itemNumber) {
+    [TDGAItem onUse:TDGACreateNSString(item) itemNumber:itemNumber];
 }
 
 #ifdef TDGA_CUSTOM
-void tdgaOnEvent(const char *eventId, const char *parameters) {
-    NSString *parameterStr = tdgaCreateNSString(parameters);
+void TDGAOnEvent(const char *eventId, const char *parameters) {
+    NSString *parameterStr = TDGACreateNSString(parameters);
     NSData *parameterData = [parameterStr dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *parameterDic = [NSJSONSerialization JSONObjectWithData:parameterData options:0 error:nil];
-    [TalkingDataGA onEvent:tdgaCreateNSString(eventId) eventData:parameterDic];
+    [TalkingDataGA onEvent:TDGACreateNSString(eventId) eventData:parameterDic];
 }
 #endif
 
-void tdgaSetLocation(double latitude, double longitude) {
-    [TalkingDataGA setLatitude:latitude longitude:longitude];
-}
-
 #ifdef TDGA_PUSH
-void tdgaSetDeviceToken(const void *deviceToken, int length) {
+void TDGASetDeviceToken(const void *deviceToken, int length) {
     NSData *tokenData = [NSData dataWithBytes:deviceToken length:length];
     [TalkingDataGA setDeviceToken:tokenData];
 }
 
-void tdgaHandlePushMessage(const char *message) {
-    NSString *val = tdgaCreateNSString(message);
+void TDGAHandlePushMessage(const char *message) {
+    NSString *val = TDGACreateNSString(message);
     NSDictionary *dic = [NSDictionary dictionaryWithObject:val forKey:@"sign"];
     [TalkingDataGA handleTDGAPushMessage:dic];
 }

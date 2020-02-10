@@ -3,31 +3,23 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 #endif
 
+
 public static class TDGAVirtualCurrency
 {
 #if UNITY_ANDROID
-    private static AndroidJavaClass agent;
+    private static string VIRTUAL_CURRENCY_CLASS = "com.tendcloud.tenddata.TDGAVirtualCurrency";
+    private static AndroidJavaClass virtualCurrencyClass;
 #endif
+
 #if UNITY_IPHONE
     [DllImport("__Internal")]
-    private static extern void tdgaOnChargeRequst(string orderId, string iapId, double currencyAmount, string currencyType, double virtualCurrencyAmount, string paymentType);
+    private static extern void TDGAOnChargeRequst(string orderId, string iapId, double currencyAmount, string currencyType, double virtualCurrencyAmount, string paymentType);
 
     [DllImport("__Internal")]
-    private static extern void tdgaOnChargSuccess(string orderId);
+    private static extern void TDGAOnChargSuccess(string orderId);
 
     [DllImport("__Internal")]
-    private static extern void tdgaOnReward(double virtualCurrencyAmount, string reason);
-#endif
-
-#if UNITY_ANDROID
-    private static AndroidJavaClass GetAgent()
-    {
-        if (agent == null)
-        {
-            agent = new AndroidJavaClass("com.tendcloud.tenddata.TDGAVirtualCurrency");
-        }
-        return agent;
-    }
+    private static extern void TDGAOnReward(double virtualCurrencyAmount, string reason);
 #endif
 
     public static void OnChargeRequest(string orderId, string iapId, double currencyAmount, string currencyType, double virtualCurrencyAmount, string paymentType)
@@ -35,10 +27,14 @@ public static class TDGAVirtualCurrency
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
 #if UNITY_ANDROID
-            GetAgent().CallStatic("onChargeRequest", orderId, iapId, currencyAmount, currencyType, virtualCurrencyAmount, paymentType);
+            if (virtualCurrencyClass == null)
+            {
+                virtualCurrencyClass = new AndroidJavaClass(VIRTUAL_CURRENCY_CLASS);
+            }
+            virtualCurrencyClass.CallStatic("onChargeRequest", orderId, iapId, currencyAmount, currencyType, virtualCurrencyAmount, paymentType);
 #endif
 #if UNITY_IPHONE
-            tdgaOnChargeRequst(orderId, iapId, currencyAmount, currencyType, virtualCurrencyAmount, paymentType);
+            TDGAOnChargeRequst(orderId, iapId, currencyAmount, currencyType, virtualCurrencyAmount, paymentType);
 #endif
         }
     }
@@ -48,10 +44,14 @@ public static class TDGAVirtualCurrency
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
 #if UNITY_ANDROID
-            GetAgent().CallStatic("onChargeSuccess", orderId);
+            if (virtualCurrencyClass == null)
+            {
+                virtualCurrencyClass = new AndroidJavaClass(VIRTUAL_CURRENCY_CLASS);
+            }
+            virtualCurrencyClass.CallStatic("onChargeSuccess", orderId);
 #endif
 #if UNITY_IPHONE
-            tdgaOnChargSuccess(orderId);
+            TDGAOnChargSuccess(orderId);
 #endif
         }
     }
@@ -61,10 +61,14 @@ public static class TDGAVirtualCurrency
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
 #if UNITY_ANDROID
-            GetAgent().CallStatic("onReward", virtualCurrencyAmount, reason);
+            if (virtualCurrencyClass == null)
+            {
+                virtualCurrencyClass = new AndroidJavaClass(VIRTUAL_CURRENCY_CLASS);
+            }
+            virtualCurrencyClass.CallStatic("onReward", virtualCurrencyAmount, reason);
 #endif
 #if UNITY_IPHONE
-            tdgaOnReward(virtualCurrencyAmount, reason);
+            TDGAOnReward(virtualCurrencyAmount, reason);
 #endif
         }
     }

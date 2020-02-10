@@ -3,31 +3,23 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 #endif
 
+
 public static class TDGAMission
 {
 #if UNITY_ANDROID
-    private static AndroidJavaClass agent;
+    private static string MISSION_CLASS = "com.tendcloud.tenddata.TDGAMission";
+    private static AndroidJavaClass missionClass;
 #endif
+
 #if UNITY_IPHONE
     [DllImport("__Internal")]
-    private static extern void tdgaOnBegin(string missionId);
+    private static extern void TDGAOnBegin(string missionId);
 
     [DllImport("__Internal")]
-    private static extern void tdgaOnCompleted(string missionId);
+    private static extern void TDGAOnCompleted(string missionId);
 
     [DllImport("__Internal")]
-    private static extern void tdgaOnFailed(string missionId, string failedCause);
-#endif
-
-#if UNITY_ANDROID
-    private static AndroidJavaClass GetAgent()
-    {
-        if (agent == null)
-        {
-            agent = new AndroidJavaClass("com.tendcloud.tenddata.TDGAMission");
-        }
-        return agent;
-    }
+    private static extern void TDGAOnFailed(string missionId, string failedCause);
 #endif
 
     public static void OnBegin(string missionId)
@@ -35,10 +27,14 @@ public static class TDGAMission
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
 #if UNITY_ANDROID
-            GetAgent().CallStatic("onBegin", missionId);
+            if (missionClass == null)
+            {
+                missionClass = new AndroidJavaClass(MISSION_CLASS);
+            }
+            missionClass.CallStatic("onBegin", missionId);
 #endif
 #if UNITY_IPHONE
-            tdgaOnBegin(missionId);
+            TDGAOnBegin(missionId);
 #endif
         }
     }
@@ -48,10 +44,14 @@ public static class TDGAMission
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
 #if UNITY_ANDROID
-            GetAgent().CallStatic("onCompleted", missionId);
+            if (missionClass == null)
+            {
+                missionClass = new AndroidJavaClass(MISSION_CLASS);
+            }
+            missionClass.CallStatic("onCompleted", missionId);
 #endif
 #if UNITY_IPHONE
-            tdgaOnCompleted(missionId);
+            TDGAOnCompleted(missionId);
 #endif
         }
     }
@@ -61,10 +61,14 @@ public static class TDGAMission
         if (Application.platform != RuntimePlatform.OSXEditor && Application.platform != RuntimePlatform.WindowsEditor)
         {
 #if UNITY_ANDROID
-            GetAgent().CallStatic("onFailed", missionId, failedCause);
+            if (missionClass == null)
+            {
+                missionClass = new AndroidJavaClass(MISSION_CLASS);
+            }
+            missionClass.CallStatic("onFailed", missionId, failedCause);
 #endif
 #if UNITY_IPHONE
-            tdgaOnFailed(missionId, failedCause);
+            TDGAOnFailed(missionId, failedCause);
 #endif
         }
     }
